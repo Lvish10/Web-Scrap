@@ -4,7 +4,7 @@ import sqlite3
 
 def scrape_jobs():
     # Read the local HTML file
-    with open(r"C:\Users\Lavish\.vscode\Web Scrap\test.html", "r", encoding='utf-8') as file:
+    with open(r"C:\Users\Lavish\.vscode\Web Scrap\Web-Scrap\test.html", "r", encoding='utf-8') as file:
         content = file.read()
 
     soup = BeautifulSoup(content, 'html.parser')
@@ -31,11 +31,11 @@ def scrape_jobs():
         closing_date = cols[5].text.strip()
         
         jobs.append({
-            'Job_Title': job_title,
-            'Sector': sector,
-            'Company': company,
-            'Country': country,
-            'Closing_Date': closing_date
+            'job_title': job_title,
+            'sector': sector,
+            'company': company,
+            'country': country,
+            'closing_date': closing_date
         })
 
     return jobs
@@ -52,22 +52,22 @@ def save_to_db(jobs, db_name='jobs.db'):
     
     # Create table if not exists
     cursor.execute('''
-    CREATE TABLE IF NOT EXISTS jobs (
+    CREATE TABLE IF NOT EXISTS job_listings (
         id INTEGER PRIMARY KEY AUTOINCREMENT,
-        Job_Title TEXT,
-        Sector TEXT,
-        Company TEXT,
-        Country TEXT,
-        Closing_Date TEXT
+        job_title TEXT,
+        sector TEXT,
+        company TEXT,
+        country TEXT,
+        closing_date TEXT
     )
     ''')
     
     # Insert data into the table
     for index, row in df.iterrows():
         cursor.execute('''
-        INSERT INTO jobs (Job_Title, Sector, Company, Country, Closing_Date)
+        INSERT INTO job_listings (job_title, sector, company, country, closing_date)
         VALUES (?, ?, ?, ?, ?)
-        ''', (row['Job_Title'], row['Sector'], row['Company'], row['Country'], row['Closing_Date']))
+        ''', (row['job_title'], row['sector'], row['company'], row['country'], row['closing_date']))
     
     conn.commit()
     conn.close()
@@ -76,8 +76,12 @@ def main():
     jobs = scrape_jobs()
     
     if jobs:
-        save_to_csv(jobs, 'jobs.csv')
-        save_to_db(jobs, 'jobs.db')
+        csv_path = r"C:\Users\Lavish\.vscode\Web Scrap\Web-Scrap\jobs.csv"
+        db_path = r"C:\Users\Lavish\.vscode\Web Scrap\Web-Scrap\jobs.db"
+        
+        # Save data to CSV and database
+        save_to_csv(jobs, csv_path)
+        save_to_db(jobs, db_path)
     else:
         print("No jobs found.")
 
