@@ -1,11 +1,97 @@
+/* General body styles */
 body {
-    background-color: #f8f9fa;
+    font-family: Arial, sans-serif;
+    line-height: 1.6;
+    margin: 0;
+    padding: 0;
+    background-color: #f4f4f4;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
 }
 
-h1 {
-    margin-bottom: 40px;
+/* Header styles */
+header {
+    background: #333;
+    color: #fff;
+    padding: 1rem 0;
+    text-align: center;
 }
 
-.table {
-    margin-bottom: 50px;
+header h1 {
+    margin: 0;
+}
+
+/* Navigation styles */
+nav ul {
+    list-style: none;
+    padding: 0;
+}
+
+nav ul li {
+    display: inline;
+    margin: 0 10px;
+}
+
+nav ul li a {
+    color: #fff;
+    text-decoration: none;
+}
+
+nav ul li a:hover {
+    text-decoration: underline;
+}
+
+/* Main content styles */
+main {
+    padding: 20px;
+    flex: 1;
+    padding-bottom: 60px;
+    /* Adjust this value to be the height of the footer */
+}
+
+/* Section styles */
+section {
+    margin-bottom: 20px;
+}
+
+section img {
+    max-width: 100%;
+    height: auto;
+}
+
+/* Footer styles */
+footer {
+    background: #333;
+    color: #fff;
+    text-align: center;
+    padding: 1rem 0;
+    position: relative;
+    /* Change to relative positioning */
+    bottom: 0;
+    width: 100%;
+}
+
+/* Table styles */
+table {
+    margin: 0 auto;
+    /* Center the table horizontally */
+    border-collapse: collapse;
+    width: 100%;
+    max-width: 1000px;
+    /* Adjust as needed for responsiveness */
+}
+
+/* Center align table headers and cells */
+table th,
+table td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: center;
+    /* Center align text in table headers and cells */
+}
+
+table th {
+    background-color: #f4f4f4;
+    font-weight: bold;
 }
