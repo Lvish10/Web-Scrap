@@ -7,8 +7,13 @@ from squarify import plot as squarify_plot
 # Load data from CSV file
 data = pd.read_csv(r'C:\Users\user\.vscode\Assignmnt\Web Scraping\Web-Scrap\construction_jobs.csv')
 
-# Handle potential NaN values in Title and Country columns
+# Handle potential NaN values in Title, Company, and Country columns
 data = data.dropna(subset=['Title', 'Company', 'Country'])
+
+# Convert 'Closing Date' to datetime and handle errors
+data['Closing Date'] = pd.to_datetime(data['Closing Date'], format='%d/%m/%Y', errors='coerce')
+data['Closing Date'] = data['Closing Date'].dt.to_period('M')  # Convert to monthly frequency
+data['Closing Date Numeric'] = pd.to_numeric(data['Closing Date'].astype(int), errors='coerce')
 
 # Get the directory of the current script
 script_dir = os.path.dirname(__file__)
@@ -51,15 +56,13 @@ plt.savefig(os.path.join(plot_dir, 'job_locations_distribution.png'))
 plt.close()
 
 # Plot 4: Closing Date Frequency
-data['Closing Date'] = pd.to_datetime(data['Closing Date'], format='%d/%m/%Y', errors='coerce')
-data['Closing Date'] = data['Closing Date'].dt.to_period('M')  # Convert to monthly frequency
 closing_date_counts = data['Closing Date'].value_counts().sort_index()
-
 plt.figure(figsize=(12, 6))
 closing_date_counts.plot(kind='bar', color='teal')
 plt.title('Job Posting Closing Dates Frequency')
 plt.xlabel('Month')
 plt.ylabel('Number of Jobs')
+plt.xticks(rotation=45)
 plt.tight_layout()
 plt.savefig(os.path.join(plot_dir, 'closing_date_frequency.png'))
 plt.close()
@@ -76,9 +79,7 @@ plt.savefig(os.path.join(plot_dir, 'heatmap_job_counts.png'))
 plt.close()
 
 # Plot 6: Job Title Length Distribution
-data['Title'] = data['Title'].astype(str)
 data['Title Length'] = data['Title'].apply(lambda x: len(x) if x != 'nan' else 0)
-
 plt.figure(figsize=(10, 6))
 sns.histplot(data['Title Length'], kde=True, color='orange')
 plt.title('Job Title Length Distribution')
@@ -97,9 +98,6 @@ plt.savefig(os.path.join(plot_dir, 'donut_chart_job_distribution_by_country.png'
 plt.close()
 
 # Plot 8: Box Plot for Closing Dates by Economic Sector
-# Convert 'Closing Date' to a numeric format for boxplot
-data['Closing Date Numeric'] = pd.to_numeric(data['Closing Date'].astype(int), errors='coerce')
-
 plt.figure(figsize=(12, 8))
 sns.boxplot(data=data, x='Economic Sector', y='Closing Date Numeric', palette='muted', hue='Economic Sector', legend=False)
 plt.title('Closing Dates by Economic Sector')
@@ -157,5 +155,6 @@ g = sns.PairGrid(data[['Title Length', 'Closing Date Numeric', 'Economic Sector'
 g.map_lower(sns.scatterplot)
 g.map_diag(sns.histplot)
 g.add_legend()
+g.tight_layout()
 g.savefig(os.path.join(plot_dir, 'pair_grid_relationships.png'))
 plt.close()

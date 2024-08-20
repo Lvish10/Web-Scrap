@@ -1,5 +1,6 @@
 import schedule
 import time
+import threading
 from selenium import webdriver
 from selenium.webdriver.edge.service import Service
 from selenium.webdriver.edge.options import Options
@@ -9,8 +10,10 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.support.ui import Select
 import pandas as pd
 import os
+import sys
+from datetime import datetime
 
-def scrape_jobs():
+def scrape_jobs(partial=False):
     # Path to Microsoft Edge WebDriver executable
     edge_driver_path = r'C:\Users\user\Downloads\edgedriver_win64\msedgedriver.exe'  # Update this path
 
@@ -69,24 +72,30 @@ def scrape_jobs():
             # Skip the header row
             for row in rows[1:]:
                 cols = row.find_elements(By.TAG_NAME, 'td')
-                if len(cols) < 6:  # Ensure the row has enough columns
-                    continue
-                
-                job_number = cols[0].text.strip() if cols[0] else "N/A"
-                job_title = cols[1].text.strip() if cols[1] else "N/A"
-                economic_sector = cols[2].text.strip() if cols[2] else "N/A"
-                company = cols[3].text.strip() if cols[3] else "N/A"
-                country = cols[4].text.strip() if cols[4] else "N/A"
-                closing_date = cols[5].text.strip() if cols[5] else "N/A"
 
-                jobs_data.append({
-                    'Job Number': job_number,
-                    'Title': job_title,
-                    'Economic Sector': economic_sector,
-                    'Company': company,
-                    'Country': country,
-                    'Closing Date': closing_date
-                })
+                # Check if any column has non-empty data before appending
+                if any(col.text.strip() for col in cols):
+                    job_number = cols[0].text.strip() if len(cols) > 0 else "N/A"
+                    job_title = cols[1].text.strip() if len(cols) > 1 else "N/A"
+                    economic_sector = cols[2].text.strip() if len(cols) > 2 else "N/A"
+                    company = cols[3].text.strip() if len(cols) > 3 else "N/A"
+                    country = cols[4].text.strip() if len(cols) > 4 else "N/A"
+                    closing_date = cols[5].text.strip() if len(cols) > 5 else "N/A"
+
+                    jobs_data.append({
+                        'Job Number': job_number,
+                        'Title': job_title,
+                        'Economic Sector': economic_sector,
+                        'Company': company,
+                        'Country': country,
+                        'Closing Date': closing_date
+                    })
+
+                if partial and len(jobs_data) >= 10:  # If partial scrape is requested, stop after 10 jobs
+                    break
+
+            if partial and len(jobs_data) >= 10:
+                break
 
             # Find and click the "Next" button
             try:
@@ -106,28 +115,74 @@ def scrape_jobs():
             # Create DataFrame
             df = pd.DataFrame(jobs_data)
 
+            # Remove any rows where all columns are NaN or empty strings
+            df.replace('', pd.NA, inplace=True)
+            df.dropna(how='all', inplace=True)
+
             # Save to CSV and Excel
             # Construct file paths
             csv_file_path = os.path.join(script_dir, 'construction_jobs.csv')
             excel_file_path = os.path.join(script_dir, 'construction_jobs.xlsx')
 
+            df.to_csv(csv_file_path, index=False)
+            df.to_excel(excel_file_path, index=False)
+
             print("Scraping complete. Data saved to 'construction_jobs.csv' and 'construction_jobs.xlsx'")
+
+            # Log the time of scraping
+            log_file_path = os.path.join(script_dir, 'scrape_log.csv')
+            log_data = {'Timestamp': [datetime.now().strftime('%Y-%m-%d %H:%M:%S')]}
+            log_df = pd.DataFrame(log_data)
+
+            if not os.path.exists(log_file_path):
+                log_df.to_csv(log_file_path, index=False)
+            else:
+                log_df.to_csv(log_file_path, mode='a', header=False, index=False)
+
+            print("Scraping time logged.")
+
         else:
             print("No job data to save.")
 
         # Quit the driver
         driver.quit()
 
-def job_schedule():
-    print("Starting job scrape...")
-    scrape_jobs()
-    print("Job scrape completed.")
+def job_schedule(time_str="23:33", partial=False):
+    def job():
+        print("Starting scheduled job scrape...")
+        scrape_jobs(partial)
+        print("Scheduled job scrape completed.")
+    
+    schedule.every().day.at(time_str).do(job)
+    while True:
+        schedule.run_pending()
+        time.sleep(10)  # Wait between checks
 
-# Schedule the job to run at a specific time
-schedule.every().day.at("23:33").do(job_schedule)  # Set to your desired time
+def start_admin():
+    while True:
+        print("\nAdministrative Menu:")
+        print("1. Start Scraping Immediately")
+        print("2. Schedule Scraping")
+        print("3. Exit Program")
+        
+        choice = input("Enter your choice (1-3): ")
 
-print("Scheduler started. Waiting to run at the specified time...")
+        if choice == '1':
+            print("Starting immediate job scrape...")
+            scrape_jobs()
+            print("Immediate job scrape completed.")
+        
+        elif choice == '2':
+            time_str = input("Enter the time to schedule scraping (HH:MM, 24-hour format): ")
+            print(f"Scraping scheduled at {time_str} every day.")
+            threading.Thread(target=job_schedule, args=(time_str,)).start()
+        
+        elif choice == '3':
+            print("Exiting program...")
+            sys.exit()
+        
+        else:
+            print("Invalid choice. Please enter a number between 1 and 3.")
 
-while True:
-    schedule.run_pending()
-    time.sleep(10)  # Wait a minute between checks
+if __name__ == "__main__":
+    start_admin()

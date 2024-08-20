@@ -5,76 +5,54 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Job Data Visualization</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
-    <!-- Add Bootstrap CSS -->
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
-    <script src="{{ url_for('static', filename='scripts.js') }}" defer></script>
 </head>
 <body>
-    <header class="bg-dark text-white py-4">
+    <header class="bg-dark text-white py-3">
         <div class="container">
-            <h1 class="text-center">Job Data Visualization</h1>
-            <nav>
-                <ul class="nav justify-content-center">
-                    <li class="nav-item"><a class="nav-link text-white" href="/">Home</a></li>
-                    <li class="nav-item"><a class="nav-link text-white" href="#job-titles">Job Titles</a></li>
-                    <li class="nav-item"><a class="nav-link text-white" href="#company-distribution">Company Distribution</a></li>
-                    <li class="nav-item"><a class="nav-link text-white" href="#location-distribution">Location Distribution</a></li>
-                    <li class="nav-item"><a class="nav-link text-white" href="#closing-date">Closing Date</a></li>
-                    <li class="nav-item"><a class="nav-link text-white" href="#heatmap">Heatmap</a></li>
-                    <li class="nav-item"><a class="nav-link text-white" href="#title-length">Title Length</a></li>
-                    <li class="nav-item"><a class="nav-link text-white" href="#job-distribution">Job Distribution by Company</a></li>
-                    <li class="nav-item"><a class="nav-link text-white" href="#title-length-company">Title Length by Company</a></li>
-                    <li class="nav-item"><a class="nav-link text-white" href="#pair-plot">Pair Plot</a></li>
+            <h1 class="text-center">Job Data Visualizations</h1>
+            <nav class="navbar navbar-expand-lg navbar-dark">
+                <ul class="navbar-nav mx-auto">
+                    <li class="nav-item"><a class="nav-link" href="/">Home</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/plots">View Plots</a></li>
                 </ul>
             </nav>
         </div>
     </header>
 
     <main class="container mt-4">
-        <section id="job-titles">
-            <h2>Job Titles Distribution</h2>
-            <img src="{{ url_for('get_plot', filename='job_titles_distribution.png') }}" class="img-fluid" alt="Job Titles Distribution">
-        </section>
-
-        <section id="company-distribution" class="mt-4">
-            <h2>Company Distribution</h2>
-            <img src="{{ url_for('get_plot', filename='company_distribution.png') }}" class="img-fluid" alt="Company Distribution">
-        </section>
-
-        <section id="location-distribution" class="mt-4">
-            <h2>Job Locations Distribution</h2>
-            <img src="{{ url_for('get_plot', filename='job_locations_distribution.png') }}" class="img-fluid" alt="Job Locations Distribution">
-        </section>
-
-        <section id="closing-date" class="mt-4">
-            <h2>Closing Date Frequency</h2>
-            <img src="{{ url_for('get_plot', filename='closing_date_frequency.png') }}" class="img-fluid" alt="Closing Date Frequency">
-        </section>
-
-        <section id="heatmap" class="mt-4">
-            <h2>Heatmap of Job Counts by Company and Location</h2>
-            <img src="{{ url_for('get_plot', filename='heatmap_job_counts.png') }}" class="img-fluid" alt="Heatmap of Job Counts">
-        </section>
-
-        <section id="title-length" class="mt-4">
-            <h2>Job Title Length Distribution</h2>
-            <img src="{{ url_for('get_plot', filename='title_length_distribution.png') }}" class="img-fluid" alt="Job Title Length Distribution">
-        </section>
-
-        <section id="job-distribution" class="mt-4">
-            <h2>Job Distribution by Company</h2>
-            <img src="{{ url_for('get_plot', filename='job_distribution_by_company.png') }}" class="img-fluid" alt="Job Distribution by Company">
-        </section>
-
-        <section id="title-length-company" class="mt-4">
-            <h2>Title Length by Company</h2>
-            <img src="{{ url_for('get_plot', filename='title_length_by_company.png') }}" class="img-fluid" alt="Title Length by Company">
-        </section>
-
-        <section id="pair-plot" class="mt-4">
-            <h2>Pair Plot of Job Title Length and Closing Date</h2>
-            <img src="{{ url_for('get_plot', filename='pair_plot.png') }}" class="img-fluid" alt="Pair Plot">
-        </section>
+        {% if error %}
+            <div class="alert alert-danger" role="alert">
+                {{ error }}
+            </div>
+        {% elif plots %}
+            <div id="carouselExampleIndicators" class="carousel slide">
+                <ol class="carousel-indicators">
+                    {% for plot in plots %}
+                        <li data-target="#carouselExampleIndicators" data-slide-to="{{ loop.index0 }}" class="{% if loop.index0 == 0 %}active{% endif %}"></li>
+                    {% endfor %}
+                </ol>
+                <div class="carousel-inner">
+                    {% for plot in plots %}
+                        <div class="carousel-item {% if loop.index0 == 0 %}active{% endif %}">
+                            <img src="{{ url_for('get_plot', filename=plot) }}" class="d-block w-100" alt="{{ plot }}">
+                        </div>
+                    {% endfor %}
+                </div>
+                <a class="carousel-control-prev" href="#carouselExampleIndicators" role="button" data-slide="prev">
+                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                    <span class="sr-only">Previous</span>
+                </a>
+                <a class="carousel-control-next" href="#carouselExampleIndicators" role="button" data-slide="next">
+                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                    <span class="sr-only">Next</span>
+                </a>
+            </div>
+        {% else %}
+            <div class="alert alert-warning" role="alert">
+                No plots found.
+            </div>
+        {% endif %}
     </main>
 
     <footer class="bg-dark text-white text-center py-3">
@@ -84,9 +62,11 @@
         </div>
     </footer>
 
-    <!-- Add Bootstrap JavaScript and dependencies -->
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+    <script>
+        document.getElementById('year').textContent = new Date().getFullYear();
+    </script>
 </body>
 </html>

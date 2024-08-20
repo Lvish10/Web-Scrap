@@ -23,6 +23,13 @@
 
     <main class="container mt-4">
         <h2>Available Jobs</h2>
+        
+        <div class="text-right mb-3">
+            <form action="{{ url_for('scrape') }}" method="get">
+                <button type="submit" class="btn btn-primary">Scrape Latest Jobs</button>
+            </form>
+        </div>          
+
         {% if error %}
         <div class="alert alert-danger">{{ error }}</div>
         {% elif jobs %}
@@ -66,5 +73,10 @@
     <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
     <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+    <!-- Year Script -->
+    <script>
+        document.getElementById('year').textContent = new Date().getFullYear();
+    </script>
 </body>
 </html>

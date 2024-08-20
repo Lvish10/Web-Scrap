@@ -4,7 +4,7 @@ body {
     line-height: 1.6;
     margin: 0;
     padding: 0;
-    background-color: #f4f4f4;
+    background-color: #e9ecef;
     display: flex;
     flex-direction: column;
     min-height: 100vh;
@@ -12,8 +12,10 @@ body {
 
 /* Header styles */
 header {
-    background: #333;
-    color: #fff;
+    background: #212529;
+    /* Darker background for header */
+    color: #ffffff;
+    /* White text color */
     padding: 1rem 0;
     text-align: center;
 }
@@ -34,7 +36,8 @@ nav ul li {
 }
 
 nav ul li a {
-    color: #fff;
+    color: #ffffff;
+    /* White text color for links */
     text-decoration: none;
 }
 
@@ -62,8 +65,10 @@ section img {
 
 /* Footer styles */
 footer {
-    background: #333;
-    color: #fff;
+    background: #212529;
+    /* Darker background for footer */
+    color: #ffffff;
+    /* White text color */
     text-align: center;
     padding: 1rem 0;
     position: relative;
@@ -92,6 +97,32 @@ table td {
 }
 
 table th {
-    background-color: #f4f4f4;
+    background-color: #f8f9fa;
+    /* Lighter background for table headers */
     font-weight: bold;
+}
+
+/* Button styles */
+.btn-primary {
+    background-color: #212529 !important;
+    /* Green background color */
+    border: none !important;
+    color: #ffffff !important;
+    /* White text color */
+    padding: 10px 20px !important;
+    text-align: center !important;
+    text-decoration: none !important;
+    display: inline-block !important;
+    font-size: 16px !important;
+    margin: 4px 55px !important;
+    cursor: pointer !important;
+    border-radius: 4px !important;
+    /* Rounded corners */
+    transition: background-color 0.3s ease !important;
+    /* Smooth transition effect */
+}
+
+.btn-primary:hover {
+    background-color: #218838 !important;
+    /* Darker green background on hover */
 }
