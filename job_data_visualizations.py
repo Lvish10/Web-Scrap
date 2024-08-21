@@ -3,9 +3,11 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import os
 from squarify import plot as squarify_plot
+from sklearn.linear_model import LinearRegression
+import numpy as np
 
 # Load data from CSV file
-data = pd.read_csv(r'C:\Users\user\.vscode\Assignmnt\Web Scraping\Web-Scrap\construction_jobs.csv')
+data = pd.read_csv(r'C:\Users\Lavish\.vscode\Web Scrap\Web-Scrap\construction_jobs.csv')
 
 # Handle potential NaN values in Title, Company, and Country columns
 data = data.dropna(subset=['Title', 'Company', 'Country'])
@@ -157,4 +159,35 @@ g.map_diag(sns.histplot)
 g.add_legend()
 g.tight_layout()
 g.savefig(os.path.join(plot_dir, 'pair_grid_relationships.png'))
+plt.close()
+
+# Plot 14: Predictive Analysis - Linear Regression for Closing Date based on Title Length
+plt.figure(figsize=(10, 6))
+X = data['Title Length'].values.reshape(-1, 1)
+y = data['Closing Date Numeric'].values
+
+# Linear regression model
+model = LinearRegression()
+model.fit(X, y)
+predictions = model.predict(X)
+
+sns.scatterplot(data=data, x='Title Length', y='Closing Date Numeric', color='blue')
+plt.plot(data['Title Length'], predictions, color='red', linewidth=2)
+plt.title('Predictive Analysis: Closing Date vs. Job Title Length')
+plt.xlabel('Job Title Length')
+plt.ylabel('Closing Date')
+plt.tight_layout()
+plt.savefig(os.path.join(plot_dir, 'predictive_analysis_closing_date_vs_title_length.png'))
+plt.close()
+
+# Plot 15: Trend Analysis - Job Posting Closing Dates Over Time
+plt.figure(figsize=(12, 6))
+trend_data = data.groupby('Closing Date').size()
+trend_data.plot(kind='line', marker='o', color='green')
+plt.title('Trend Analysis: Job Posting Closing Dates Over Time')
+plt.xlabel('Closing Date')
+plt.ylabel('Number of Jobs')
+plt.xticks(rotation=45)
+plt.tight_layout()
+plt.savefig(os.path.join(plot_dir, 'trend_analysis_closing_dates_over_time.png'))
 plt.close()

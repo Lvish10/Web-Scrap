@@ -11,7 +11,7 @@ app = Flask(__name__)
 @app.route('/')
 def home():
     # Path to the CSV file
-    csv_path = r'C:\Users\user\.vscode\Assignmnt\Web Scraping\Web-Scrap\construction_jobs.csv'
+    csv_path = r'C:\Users\Lavish\.vscode\Web Scrap\Web-Scrap\construction_jobs.csv'
 
     # Check if the CSV file exists
     if not os.path.isfile(csv_path):
