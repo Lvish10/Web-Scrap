@@ -1,24 +1,19 @@
-from flask import Flask, render_template, send_from_directory, redirect, url_for
+from flask import Flask, render_template, send_from_directory, redirect, url_for, request
 import pandas as pd
 import os
-from threading import Thread  # To run the scrape function in the background
-
-# Import your scrape_jobs function
-from scrape_jobs_selenium import scrape_jobs
+from threading import Thread
+from scrape_jobs_selenium import scrape_jobs, job_schedule  # Import job_schedule
 
 app = Flask(__name__)
 
 @app.route('/')
 def home():
-    # Path to the CSV file
     csv_path = r'C:\Users\Lavish\.vscode\Web Scrap\Web-Scrap\construction_jobs.csv'
 
-    # Check if the CSV file exists
     if not os.path.isfile(csv_path):
         return render_template('index.html', jobs=None, error='CSV file not found.')
 
     try:
-        # Load job data from CSV
         data = pd.read_csv(csv_path)
         jobs = data.to_dict(orient='records')
     except Exception as e:
@@ -28,11 +23,16 @@ def home():
 
 @app.route('/scrape')
 def scrape():
-    # Run the scrape_jobs function in a separate thread so it doesn't block the main thread
     Thread(target=scrape_jobs).start()
-
-    # Redirect back to the home page after starting the scrape
     return redirect(url_for('home'))
+
+@app.route('/schedule_scrape', methods=['POST'])
+def schedule_scrape():
+    time_str = request.form.get('schedule_time')
+    if time_str:
+        Thread(target=job_schedule, args=(time_str,)).start()
+        return redirect(url_for('home', message="Scraping scheduled at " + time_str))
+    return redirect(url_for('home', error="Failed to schedule scraping."))
 
 @app.route('/plots')
 def plots():
@@ -43,7 +43,6 @@ def plots():
         return render_template('plots.html', plots=None, error=str(e))
 
     return render_template('plots.html', plots=plot_files)
-
 
 @app.route('/plots/<filename>')
 def get_plot(filename):

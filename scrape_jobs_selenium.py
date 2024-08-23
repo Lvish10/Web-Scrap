@@ -15,7 +15,7 @@ from datetime import datetime
 
 def scrape_jobs(partial=False):
     # Path to Microsoft Edge WebDriver executable
-    edge_driver_path = r'C:\Users\user\Downloads\edgedriver_win64\msedgedriver.exe'  # Update this path
+    edge_driver_path = r'C:\Users\Lavish\Downloads\edgedriver_win64\msedgedriver.exe'  # Update this path
 
     # Set up Selenium WebDriver with Edge
     options = Options()

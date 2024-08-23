@@ -5,6 +5,7 @@ import os
 from squarify import plot as squarify_plot
 from sklearn.linear_model import LinearRegression
 import numpy as np
+from wordcloud import WordCloud
 
 # Load data from CSV file
 data = pd.read_csv(r'C:\Users\Lavish\.vscode\Web Scrap\Web-Scrap\construction_jobs.csv')
@@ -191,3 +192,35 @@ plt.xticks(rotation=45)
 plt.tight_layout()
 plt.savefig(os.path.join(plot_dir, 'trend_analysis_closing_dates_over_time.png'))
 plt.close()
+
+# Plot 16: Word Cloud for Job Titles
+wordcloud = WordCloud(width=800, height=400, background_color='white').generate(' '.join(data['Title'].astype(str)))
+
+plt.figure(figsize=(10, 6))
+plt.imshow(wordcloud, interpolation='bilinear')
+plt.title('Word Cloud of Job Titles')
+plt.axis('off')
+plt.tight_layout()
+plt.savefig(os.path.join(plot_dir, 'word_cloud_job_titles.png'))
+plt.close()
+
+# Plot 17: Correlation Matrix Plot
+plt.figure(figsize=(10, 6))
+correlation_matrix = data.corr(numeric_only=True)
+sns.heatmap(correlation_matrix, annot=True, cmap='coolwarm', fmt='.2f')
+plt.title('Correlation Matrix')
+plt.tight_layout()
+plt.savefig(os.path.join(plot_dir, 'correlation_matrix.png'))
+plt.close()
+
+# Plot 18: Bar Plot for Economic Sector Distribution
+plt.figure(figsize=(10, 6))
+sns.countplot(data=data, y='Economic Sector', order=data['Economic Sector'].value_counts().index, palette='Set3')
+plt.title('Economic Sector Distribution')
+plt.xlabel('Number of Jobs')
+plt.ylabel('Economic Sector')
+plt.tight_layout()
+plt.savefig(os.path.join(plot_dir, 'bar_plot_economic_sector_distribution.png'))
+plt.close()
+
+print("All plots have been generated and saved successfully.")
