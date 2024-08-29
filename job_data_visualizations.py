@@ -15,8 +15,13 @@ data = data.dropna(subset=['Title', 'Company', 'Country'])
 
 # Convert 'Closing Date' to datetime and handle errors
 data['Closing Date'] = pd.to_datetime(data['Closing Date'], format='%d/%m/%Y', errors='coerce')
-data['Closing Date'] = data['Closing Date'].dt.to_period('M')  # Convert to monthly frequency
-data['Closing Date Numeric'] = pd.to_numeric(data['Closing Date'].astype(int), errors='coerce')
+
+# Drop rows where 'Closing Date' could not be parsed
+data = data.dropna(subset=['Closing Date'])
+
+# Convert 'Closing Date' to numeric form (days since January 1, 2024)
+reference_date = pd.Timestamp("2024-01-01")
+data['Closing Date Numeric'] = (data['Closing Date'] - reference_date) // pd.Timedelta('1D')
 
 # Get the directory of the current script
 script_dir = os.path.dirname(__file__)
@@ -59,11 +64,11 @@ plt.savefig(os.path.join(plot_dir, 'job_locations_distribution.png'))
 plt.close()
 
 # Plot 4: Closing Date Frequency
-closing_date_counts = data['Closing Date'].value_counts().sort_index()
+closing_date_counts = data['Closing Date'].dt.to_period('M').value_counts().sort_index()
 plt.figure(figsize=(12, 6))
 closing_date_counts.plot(kind='bar', color='teal')
 plt.title('Job Posting Closing Dates Frequency')
-plt.xlabel('Month')
+plt.xlabel('Closing Date')
 plt.ylabel('Number of Jobs')
 plt.xticks(rotation=45)
 plt.tight_layout()
@@ -82,7 +87,7 @@ plt.savefig(os.path.join(plot_dir, 'heatmap_job_counts.png'))
 plt.close()
 
 # Plot 6: Job Title Length Distribution
-data['Title Length'] = data['Title'].apply(lambda x: len(x) if x != 'nan' else 0)
+data['Title Length'] = data['Title'].apply(len)
 plt.figure(figsize=(10, 6))
 sns.histplot(data['Title Length'], kde=True, color='orange')
 plt.title('Job Title Length Distribution')
@@ -102,18 +107,19 @@ plt.close()
 
 # Plot 8: Box Plot for Closing Dates by Economic Sector
 plt.figure(figsize=(12, 8))
-sns.boxplot(data=data, x='Economic Sector', y='Closing Date Numeric', palette='muted', hue='Economic Sector', legend=False)
+sns.boxplot(data=data, x='Economic Sector', y='Closing Date Numeric', palette='muted', hue='Economic Sector')
 plt.title('Closing Dates by Economic Sector')
 plt.xlabel('Economic Sector')
-plt.ylabel('Closing Date')
+plt.ylabel('Closing Date (Days since January 1, 2024)')
 plt.xticks(rotation=90)
+plt.legend(loc='upper left', bbox_to_anchor=(1, 1))
 plt.tight_layout()
 plt.savefig(os.path.join(plot_dir, 'box_plot_closing_dates_by_sector.png'))
 plt.close()
 
 # Plot 9: FacetGrid for Job Distribution by Company and Country
 g = sns.FacetGrid(data, col='Company', col_wrap=4, height=5, aspect=1.5)
-g.map(sns.countplot, 'Country', palette='husl')
+g.map(sns.countplot, 'Country', palette='husl', order=data['Country'].value_counts().index)
 g.set_titles(col_template="{col_name}")
 g.set_axis_labels('Country', 'Number of Jobs')
 g.tight_layout()
@@ -136,7 +142,7 @@ plt.figure(figsize=(10, 6))
 sns.regplot(data=data, x='Title Length', y='Closing Date Numeric', scatter_kws={'s':50}, line_kws={'color':'red'})
 plt.title('Job Title Length vs. Closing Date')
 plt.xlabel('Title Length')
-plt.ylabel('Closing Date')
+plt.ylabel('Closing Date (Days since January 1, 2024)')
 plt.tight_layout()
 plt.savefig(os.path.join(plot_dir, 'scatter_plot_title_length_vs_closing_date.png'))
 plt.close()
@@ -176,14 +182,14 @@ sns.scatterplot(data=data, x='Title Length', y='Closing Date Numeric', color='bl
 plt.plot(data['Title Length'], predictions, color='red', linewidth=2)
 plt.title('Predictive Analysis: Closing Date vs. Job Title Length')
 plt.xlabel('Job Title Length')
-plt.ylabel('Closing Date')
+plt.ylabel('Closing Date (Days since January 1, 2024)')
 plt.tight_layout()
 plt.savefig(os.path.join(plot_dir, 'predictive_analysis_closing_date_vs_title_length.png'))
 plt.close()
 
 # Plot 15: Trend Analysis - Job Posting Closing Dates Over Time
 plt.figure(figsize=(12, 6))
-trend_data = data.groupby('Closing Date').size()
+trend_data = data['Closing Date'].dt.to_period('M').value_counts().sort_index()
 trend_data.plot(kind='line', marker='o', color='green')
 plt.title('Trend Analysis: Job Posting Closing Dates Over Time')
 plt.xlabel('Closing Date')
@@ -206,7 +212,7 @@ plt.close()
 
 # Plot 17: Correlation Matrix Plot
 plt.figure(figsize=(10, 6))
-correlation_matrix = data.corr(numeric_only=True)
+correlation_matrix = data[['Title Length', 'Closing Date Numeric']].corr()
 sns.heatmap(correlation_matrix, annot=True, cmap='coolwarm', fmt='.2f')
 plt.title('Correlation Matrix')
 plt.tight_layout()
