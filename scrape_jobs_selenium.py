@@ -147,13 +147,17 @@ def scrape_jobs(partial=False):
         # Quit the driver
         driver.quit()
 
-def job_schedule(time_str="23:33", partial=False):
+def job_schedule(time_str=None, interval=None):
     def job():
         print("Starting scheduled job scrape...")
-        scrape_jobs(partial)
+        scrape_jobs()
         print("Scheduled job scrape completed.")
     
-    schedule.every().day.at(time_str).do(job)
+    if interval:
+        schedule.every(interval).minutes.do(job)
+    elif time_str:
+        schedule.every().day.at(time_str).do(job)
+    
     while True:
         schedule.run_pending()
         time.sleep(10)  # Wait between checks
@@ -162,10 +166,11 @@ def start_admin():
     while True:
         print("\nAdministrative Menu:")
         print("1. Start Scraping Immediately")
-        print("2. Schedule Scraping")
-        print("3. Exit Program")
+        print("2. Schedule Scraping Daily")
+        print("3. Schedule Scraping Every 5 Minutes")
+        print("4. Exit Program")
         
-        choice = input("Enter your choice (1-3): ")
+        choice = input("Enter your choice (1-4): ")
 
         if choice == '1':
             print("Starting immediate job scrape...")
@@ -178,11 +183,15 @@ def start_admin():
             threading.Thread(target=job_schedule, args=(time_str,)).start()
         
         elif choice == '3':
+            print("Scraping scheduled every 5 minutes.")
+            threading.Thread(target=job_schedule, args=(None, 5)).start()
+        
+        elif choice == '4':
             print("Exiting program...")
             sys.exit()
         
         else:
-            print("Invalid choice. Please enter a number between 1 and 3.")
+            print("Invalid choice. Please enter a number between 1 and 4.")
 
 if __name__ == "__main__":
     start_admin()
